@@ -26,11 +26,15 @@ list(APPEND ASP3_INCLUDE_DIRS
     ${ASP3_ROOT_DIR}/arch/gcc
 )
 
+#  TOPPERS_ENABLE_TRUSTZONE は定義しないこと：STM32H5 は TZEN オプションバイト
+#  無効（出荷時 0xC3=disabled）の場合，ハードウェアが生成する EXC_RETURN は
+#  0xFFFFFFBC（ES/S=0）．定義すると Secure 用 0xFFFFFFFD になり仕様上不正
+#  （RES0 ビットに 1）．実測（NUCLEO-H533RE）では動作したが保証はないため，
+#  TZEN 無効構成では定義しない．TZEN 有効（Secure 実行）にする場合のみ定義する．
 list(APPEND ASP3_COMPILE_DEFS
     TOPPERS_CORTEX_M33
     __TARGET_ARCH_THUMB=5
     __TARGET_FPU_FPV4_SP
-    TOPPERS_ENABLE_TRUSTZONE
 )
 
 list(APPEND ASP3_ARCH_C_FILES

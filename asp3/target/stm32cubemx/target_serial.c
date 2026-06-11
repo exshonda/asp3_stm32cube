@@ -5,7 +5,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include "t_stddef.h"
 #include "target_serial.h"
 #include "target_syssvc.h"
@@ -172,14 +171,33 @@ void sio_dis_cbr(SIOPCB *p_siopcb, uint_t cbrtn)
 }
 
 /*
+ * SIOポートへのポーリング出力
+ *
+ * syslogの低レベル出力．カーネル起動前・CPUロック中・例外文脈でも
+ * 動作するよう，HAL・stdioを介さずUSART3（ST-LINK VCP）レジスタを
+ * 直接ポーリングする（porting仕様の「SIOポーリング出力」）．
+ */
+static void h563_uart_fput(char c)
+{
+    while ((USART3->ISR & USART_ISR_TXE) == 0U) {
+        /* 送信データレジスタが空くまでポーリング */
+    }
+    USART3->TDR = (uint8_t)c;
+}
+
+/*
  * SIOポートへの文字出力
  */
 void target_fput_log(char c)
 {
-    if (c == '\n') {
-        putc('\r', stdout);
+    /* UART未初期化（BSP_COM_Init前）の間は捨てる */
+    if ((USART3->CR1 & USART_CR1_UE) == 0U) {
+        return;
     }
-    putc(c, stdout);
+    if (c == '\n') {
+        h563_uart_fput('\r');
+    }
+    h563_uart_fput(c);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)

@@ -73,7 +73,17 @@ if "GenResVectVal" not in globals():
 #
 IncludeTrb("kernel/kernel.py")
 
-kernelCfgC.append("""/*
+#
+#  VTOR の整列要件：ベクタテーブルは「エントリ数×4 以上の2のべき乗」境界に
+#  置く必要がある（ARMv8-M）．CubeMX 生成のリンカスクリプトに .vector の
+#  配置規則は無く orphan section（4byte整列）となるため，整列違反だと
+#  VTOR 下位ビットが切り捨てられ全ベクタがずれて即死する（実害確認済み）．
+#
+vector_table_align = 1
+while vector_table_align < (TMAX_INTNO + 1) * 4:
+    vector_table_align *= 2
+
+kernelCfgC.append(f"""/*
  *  Target-dependent Definitions (ARM-M / STM32Cube)
  */
 
@@ -83,9 +93,10 @@ kernelCfgC.append("""/*
  *  リセットエントリ・初期スタックポインタは CubeMX 生成の startup から引く．
  *  Reset_Handler は target_kernel.h，_estack は target_kernel_impl.h で
  *  既に宣言済み（cfg1_out 用のダミー Reset_Handler は target_cfg1_out.h）．
+ *  aligned は VTOR の整列要件（エントリ数×4 以上の2のべき乗）のため必須．
  */
-__attribute__ ((section(".vector")))
-const FP _kernel_vector_table[] = {
+__attribute__ ((section(".vector"), aligned({vector_table_align})))
+const FP _kernel_vector_table[] = {{
     (FP)(&_estack),                    /* 0 The initial stack pointer */
     (FP)Reset_Handler,                 /* 1 The reset handler */
 """)
