@@ -21,8 +21,6 @@ endif()
 # Set the project name
 set(CMAKE_PROJECT_NAME H563ZI)
 
-# Include toolchain file
-include("cmake/gcc-arm-none-eabi.cmake")
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -40,37 +38,38 @@ add_executable(${CMAKE_PROJECT_NAME})
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)
 
-# TOPPERS/ASP3 の STM32 Cube MX 用のコンパイラ定義をインクルード
+# ===== TOPPERS/ASP3 Core 取り込み（submodule＋ライブラリ専用モード） =====
+# 旧 bundled asp3/(TECS/Ruby fork) を廃止し、純カーネル asp3_core を submodule
+# 参照する構成。STM32固有の arch/target は本リポジトリ asp3/ 側。
+# 経緯：asp3/asp3_core/docs/dev/stm32-integration.md（FSP/ek_ra* と同型）
+
+# ターゲット依存部（別ボードは asp3/target/ のディレクトリ名に合わせる）
+set(ASP3_TARGET stm32cubemx)
+
+# STM32 協調ヘルパ（ASP3_TARGET_DIR / ASP3_CORE_DIR / ASP3_ROOT_DIR を解決）
 include(../asp3/asp3_stm32cubemx.cmake)
 
-# TOPPERS/ASP3 のカーネルオブジェクト定義のcfgファイルを設定
-set(ASP3_APP_CFG_FILE ${ASP3_ROOT_DIR}/sample/sample1.cfg)
+# アプリ（タスク定義）は asp3_core 同梱 sample（自作アプリに差し替え可）
+set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
+set(ASP3_APPLNAME sample1)
 
-list(APPEND ASP3_INCLUDE_DIRS
-    ${ASP3_ROOT_DIR}/sample
-)
-
-# TOPPERS/ASP3 のライブラリを追加
-add_subdirectory(${ASP3_ROOT_DIR} asp3)
-
-# TOPPERS/ASP3 付属のソースファイルを追加
-include(${ASP3_ROOT_DIR}/library/library.cmake)
-include(${ASP3_ROOT_DIR}/syssvc/syssvc.cmake)
+# asp3 カーネルライブラリをライブラリ専用モードでビルド
+set(ASP3_LIBRARY_ONLY ON CACHE BOOL "build asp3 as library only" FORCE)
+add_subdirectory(${ASP3_CORE_DIR} asp3)
 
 # Link directories setup
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
-# Add sources to executable
+# 最終実行ファイルに asp3・タスク本体・システムサービスを追加
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    ${ASP3_ROOT_DIR}/sample/sample1.c
+    ${ASP3_CORE_DIR}/sample/sample1.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
+    ${ASP3_CORE_DIR}/sample
 )
 
 # Add project symbols (macros)
@@ -85,6 +84,12 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     # Add user defined libraries
     asp3
 )
+
+# システムサービス（banner / syslog / serial / logtask 等）を追加
+asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+
+# TOPPERS/ASP3 を使うための STM32 の設定（現状なし）
+asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
 
 # TOPPERS/ASP3 のチェックを行う（シンボルがGCされるとエラーになるので省略）
 #asp3_cfg_check(${CMAKE_PROJECT_NAME})

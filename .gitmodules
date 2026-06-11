@@ -1,0 +1,3 @@
+[submodule "asp3/asp3_core"]
+	path = asp3/asp3_core
+	url = https://github.com/exshonda/asp3_core.git
