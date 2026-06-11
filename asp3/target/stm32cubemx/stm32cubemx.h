@@ -52,7 +52,13 @@
 /*
  *  微少時間待ちのための定義（本来はSILのターゲット依存部）
  */
-#define SIL_DLY_TIM1    79
+/*
+ *  sil_dly_nse の較正値（実機 dlynse テストで決定）
+ *  NUCLEO-H563ZI 実測：セットアップ≈68ns・ループ1周≈56ns。
+ *  TIM1=79 だと境界要求（TIM1+TIM2=129ns）で実時間 124ns と下回るため、
+ *  TIM1 は実測セットアップ時間より小さい 64 とする（遅延は長くなる安全側）。
+ */
+#define SIL_DLY_TIM1    64
 #define SIL_DLY_TIM2    50
 
 #endif /* TOPPERS_STM32CUBEMX_H */
