@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.trb": "ruby",
+        "*.h": "c"
+    }
+}
