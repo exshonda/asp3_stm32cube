@@ -50,8 +50,11 @@ set(ASP3_TARGET stm32cubemx)
 include(../asp3/asp3_stm32cubemx.cmake)
 
 # アプリ（タスク定義）は asp3_core 同梱 sample（自作アプリに差し替え可）
-set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
-set(ASP3_APPLNAME sample1)
+# -D ASP3_APPLDIR/ASP3_APPLNAME 指定時はそれを尊重する（test_porting 等の差し替え用）
+if(NOT DEFINED ASP3_APPLDIR)
+    set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
+    set(ASP3_APPLNAME sample1)
+endif()
 
 # asp3 カーネルライブラリをライブラリ専用モードでビルド
 set(ASP3_LIBRARY_ONLY ON CACHE BOOL "build asp3 as library only" FORCE)
@@ -63,13 +66,15 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # 最終実行ファイルに asp3・タスク本体・システムサービスを追加
+# （アプリは ASP3_APPLDIR/ASP3_APPLNAME で選択。既定は sample/sample1）
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    ${ASP3_CORE_DIR}/sample/sample1.c
+    ${ASP3_APPLDIR}/${ASP3_APPLNAME}.c
+    ${ASP3_EXTRA_APP_C_FILES}
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${ASP3_CORE_DIR}/sample
+    ${ASP3_APPLDIR}
 )
 
 # Add project symbols (macros)
