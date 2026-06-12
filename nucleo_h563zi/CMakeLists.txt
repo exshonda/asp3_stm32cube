@@ -44,10 +44,10 @@ add_subdirectory(cmake/stm32cubemx)
 # 経緯：asp3/asp3_core/docs/dev/stm32-integration.md（FSP/ek_ra* と同型）
 
 # ターゲット依存部（別ボードは asp3/target/ のディレクトリ名に合わせる）
-set(ASP3_TARGET stm32cubemx)
+set(ASP3_TARGET stm32h563_nucleo)
 
 # STM32 協調ヘルパ（ASP3_TARGET_DIR / ASP3_CORE_DIR / ASP3_ROOT_DIR を解決）
-include(../asp3/asp3_stm32cubemx.cmake)
+include(../asp3/asp3_stm32cube.cmake)
 
 # アプリ（タスク定義）は asp3_core 同梱 sample（自作アプリに差し替え可）
 # -D ASP3_APPLDIR/ASP3_APPLNAME 指定時はそれを尊重する（test_porting 等の差し替え用）

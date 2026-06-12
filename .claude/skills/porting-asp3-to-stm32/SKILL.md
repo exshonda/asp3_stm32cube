@@ -5,7 +5,7 @@ description: TOPPERS/ASP3 を STM32（NUCLEO-H5系・STM32CubeMX + HAL + arm-non
 
 # TOPPERS/ASP3 を STM32 ボードに移植する
 
-このリポジトリ（`asp3_stm32cubemx`・旧 `stm32_vscode_asp`）は TOPPERS/ASP3 Core を STM32Cube HAL 環境で
+このリポジトリ（`asp3_stm32cube`・旧 `stm32_vscode_asp`）は TOPPERS/ASP3 Core を STM32Cube HAL 環境で
 動かすための移植層。NUCLEO-H563ZI / NUCLEO-H533RE（いずれも Cortex-M33）を実例として、
 新規 STM32 ボード対応や実機ブリングアップに必要な作業をまとめる。
 
@@ -21,15 +21,15 @@ description: TOPPERS/ASP3 を STM32（NUCLEO-H5系・STM32CubeMX + HAL + arm-non
 ### 1. ディレクトリ構成
 
 ```
-asp3_stm32cubemx/
+asp3_stm32cube/
 ├── asp3/
 │   ├── asp3_core/                 # カーネル本体（git submodule・無変更が原則）
 │   ├── arch/arm_m_gcc/
 │   │   └── stm32h5xx_stm32cube/   # チップ層（H5共通・外側リポジトリ管理）
 │   ├── target/
-│   │   ├── stm32cubemx/           # NUCLEO-H563ZI 用ターゲット依存部
+│   │   ├── stm32h563_nucleo/           # NUCLEO-H563ZI 用ターゲット依存部
 │   │   └── stm32h533_nucleo/      # NUCLEO-H533RE 用ターゲット依存部
-│   └── asp3_stm32cubemx.cmake     # glue（ASP3_TARGET_DIR/ASP3_CORE_DIR 解決）
+│   └── asp3_stm32cube.cmake     # glue（ASP3_TARGET_DIR/ASP3_CORE_DIR 解決）
 ├── nucleo_h563zi/                 # CubeMX プロジェクト（H563ZI.ioc が正本）
 └── nucleo_h533re/                 # CubeMX プロジェクト（H533.ioc が正本）
     ├── H533.ioc                   # CubeMX 設定（コミット対象）

@@ -1,7 +1,7 @@
 # 新規 STM32 ボード追加チェックリスト
 
 新しい NUCLEO ボード（例: NUCLEO-H723ZG）に TOPPERS/ASP3 を追加するときの作業手順。
-実例: NUCLEO-H533RE 追加（`target/stm32cubemx`＝H563ZI を複製して最小改変）。
+実例: NUCLEO-H533RE 追加（`target/stm32h563_nucleo`＝H563ZI を複製して最小改変）。
 
 ## 事前準備
 
@@ -37,7 +37,7 @@
 
 ## ASP3 ターゲット依存部（`asp3/target/<新ターゲット>/`）
 
-既存ボード（`stm32h533_nucleo` か `stm32cubemx`）をディレクトリごとコピーして編集。
+既存ボード（`stm32h533_nucleo` か `stm32h563_nucleo`）をディレクトリごとコピーして編集。
 
 - [ ] `target.cmake` — チップ define（`STM32H533xx` 等）・コメント
 - [ ] `target_stddef.h` — `TOPPERS_NUCLEO_*` マクロ

@@ -1,4 +1,4 @@
-PACKAGE stm32cubemx_gcc
+PACKAGE stm32h533_nucleo_gcc
 
 E_PACKAGE
 Makefile.target

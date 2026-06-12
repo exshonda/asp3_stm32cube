@@ -1,4 +1,4 @@
-E_PACKAGE asp3_stm32cubemx_gcc
+E_PACKAGE asp3_stm32cube_gcc
 VERSION %date
 
 INCLUDE MANIFEST

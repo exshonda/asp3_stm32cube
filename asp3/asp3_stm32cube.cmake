@@ -8,7 +8,7 @@
 #
 #  カーネル本体・共通arch・cfgエンジンは asp3_core サブモジュール（ASP3_CORE_DIR）側，
 #  STM32固有のチップ依存部（arch/arm_m_gcc/stm32h5xx_stm32cube）とターゲット依存部
-#  （target/stm32cubemx）は本リポジトリ側に置く（ASP3_TARGET_DIR で供給）．
+#  （target/stm32h563_nucleo 等）は本リポジトリ側に置く（ASP3_TARGET_DIR で供給）．
 #  経緯：asp3/asp3_core/docs/dev/stm32-integration.md（FSP/ek_ra* と同型）
 #
 
@@ -26,7 +26,7 @@ set(ASP3_ROOT_DIR ${ASP3_CORE_DIR})
 #  STM32ターゲット依存部（target.cmake）を asp3_core へ供給（本リポジトリ側）．
 #  asp3_core.cmake は未定義時のみ既定値で埋めるため，ここで先に設定する．
 if(NOT DEFINED ASP3_TARGET)
-    set(ASP3_TARGET stm32cubemx)
+    set(ASP3_TARGET stm32h563_nucleo)
 endif()
 set(ASP3_TARGET_DIR ${CMAKE_CURRENT_LIST_DIR}/target/${ASP3_TARGET})
 
