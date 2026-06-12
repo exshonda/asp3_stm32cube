@@ -1,32 +1,91 @@
-# TOPPERS/ASP3 の STM32 CubeMX向け環境
+# TOPPERS/ASP3 Core の STM32 CubeMX 向け環境
 
-TOPPERS/ASP3 の開発を[Visual Studio Code](https://code.visualstudio.com/)の[STM32 VS Code Extension](https://marketplace.visualstudio.com/items?itemName=stmicroelectronics.stm32-vscode-extension)で行えるようにした環境です。
-下記のURLの「Nucleo L552ZE-Q 簡易パッケージ」に TOPPERS/ASP3 Ver.3.7.1 を適用し、CMakeでビルド出来るよう更新したものです。
+[TOPPERS/ASP3 Core](https://github.com/exshonda/asp3_core)（TECSレス・Python cfg 版 ASP3）を、
+STM32CubeMX が生成する HAL プロジェクトと協調動作させる環境です。
+カーネル本体は git submodule（`asp3/asp3_core`）として取り込み、STM32 固有部
+（チップ層・ターゲット依存部）を本リポジトリで管理します
+（[asp3_pico_sdk](https://github.com/exshonda/asp3_pico_sdk)／
+[asp3_fsp](https://github.com/exshonda/asp3_fsp) と同方式）。
 
-<https://www.toppers.jp/asp3-e-download.html>
+## 対応ボードと検証状況
 
-現在 TECS には対応出来ていません。
+| ボード | MCU | ターゲット名 | 実機検証（2026-06-12） |
+|---|---|---|---|
+| NUCLEO-H563ZI | STM32H563ZI（Cortex-M33） | `stm32cubemx` | sample1・test_porting 6/6・testexec 32 PASS |
+| NUCLEO-H533RE | STM32H533RE（Cortex-M33） | `stm32h533_nucleo` | 同上 |
+
+詳細は [docs/verification.md](docs/verification.md)、残課題は [docs/TODO.md](docs/TODO.md) を参照。
+
+## ディレクトリ構成
+
+```
+stm32_vscode_asp/
+├── asp3/
+│   ├── asp3_core/                 # カーネル本体（git submodule・無変更）
+│   ├── arch/arm_m_gcc/stm32h5xx_stm32cube/   # チップ層（H5共通）
+│   ├── target/stm32cubemx/        # NUCLEO-H563ZI ターゲット依存部
+│   ├── target/stm32h533_nucleo/   # NUCLEO-H533RE ターゲット依存部
+│   └── asp3_stm32cubemx.cmake     # glue（ASP3_TARGET_DIR 等の解決）
+├── nucleo_h563zi/                 # CubeMX プロジェクト（H563ZI.ioc が正本）
+├── nucleo_h533re/                 # CubeMX プロジェクト（H533.ioc が正本）
+├── scripts/testexec_stm32.py      # 実機向け機能テストランナー
+└── docs/                          # 検証状況・残課題
+```
+
+`Drivers/`・`cmake/`・`*.ld`・`CMakePresets.json` は CubeMX 生成物（.gitignore 対象）で、
+clone 直後はビルドできません。**最初に CubeMX で GENERATE CODE して復元**してください。
 
 ## ビルド方法
 
-### STM32 CubeMX でコード生成
+### 0. クローン
 
-下記のURLから STM32 CubeMX をダウンロードし、インストールします。
+```bash
+git clone --recursive https://github.com/exshonda/stm32_vscode_asp.git
+```
+
+### 1. STM32CubeMX でコード生成
+
+下記の URL から STM32CubeMX をダウンロードし、インストールします
+（動作確認済み: 6.17.0 + FW_H5 V1.6.0。バージョンは現行版に合わせる方針）。
 
 <https://www.st.com/ja/development-tools/stm32cubemx.html>
 
-`nucleo_h563zi/H563ZI.ioc`を STM32 CubeMX で開いて、右上にある`GENERATE CODE`ボタンを押下します。
+`nucleo_h563zi/H563ZI.ioc`（または `nucleo_h533re/H533.ioc`）を STM32CubeMX で開いて、
+右上にある`GENERATE CODE`ボタンを押下します。
+FW パッケージ未導入の場合はダウンロード確認が出るので許可してください。
 
 ![STM32 CubeMX](images/stm32cubemx.png)
 
-ビルドに必要なコードが生成されます。
-既存のコードの変更点はマージされて出力されます。
+ビルドに必要なコードが生成されます。既存のコードの変更点
+（`USER CODE BEGIN/END` 間）はマージされて出力されます。
 
-### Visual Studio Code の CMake拡張機能でビルド
+> CubeMX のヘッドレス実行（`-q`）は X ディスプレイとモーダルダイアログ操作が
+> 必要なため、GUI での生成を推奨します。
+
+### 2-a. コマンドラインでビルド
+
+```bash
+cd nucleo_h563zi          # または nucleo_h533re
+cmake --preset Debug
+cmake --build build/Debug # → build/Debug/H563ZI.elf
+```
+
+### 2-b. Visual Studio Code の CMake 拡張機能でビルド
 
 Visual Studio Code で、`nucleo_h563zi`フォルダを開いて、下のステータスバーの左にある「ビルド」を押します。
 
 ![Visual Studio Code](images/vscode.png)
+
+## 実行・デバッグ
+
+### コマンドラインで書込み
+
+```bash
+STM32_Programmer_CLI -c port=SWD reset=HWrst -w build/Debug/H563ZI.elf -v -rst
+```
+
+シリアル（ST-LINK Virtual COM Port・115200 8N1）に sample1 のバナーと
+`task1 is running` が出力されます。`r` を送ると task1→2→3 が切り替わります。
 
 ### Visual Studio Code でのデバッグ
 
@@ -44,11 +103,43 @@ Visual Studio Code の「実行とデバッグ」から`Build & Debug Microcontr
 
 ![シリアル モニタ](images/vscode_serial.png)
 
+> OpenOCD + gdb-multiarch による CLI デバッグ（vector_catch 等）の手順は
+> `.claude/skills/porting-asp3-to-stm32/reference/flash-debug-tools.md` を参照。
+
+## テスト
+
+アプリは `-D` 指定で差し替えられます（既定は sample1）。
+
+```bash
+# 移植検証テスト（TAP 6項目）
+CORE=$PWD/../asp3/asp3_core
+cmake --preset Debug -B build/TestPorting \
+  -DASP3_APPLDIR=$CORE/test/porting -DASP3_APPLNAME=test_porting \
+  -DASP3_EXTRA_APP_C_FILES=$CORE/test/porting/tap.c
+cmake --build build/TestPorting
+
+# 機能テスト全件（実機・リポジトリルートで）
+python3 scripts/testexec_stm32.py --board nucleo_h563zi
+```
+
+結果の見方・既知の非PASS は [docs/verification.md](docs/verification.md) を参照。
+
+## ドキュメント
+
+| 内容 | 場所 |
+|---|---|
+| 検証状況・テスト再実行手順 | [docs/verification.md](docs/verification.md) |
+| 残課題 | [docs/TODO.md](docs/TODO.md) |
+| 移植の経緯・root cause 解析（正本） | `asp3/asp3_core/docs/dev/stm32-integration.md` |
+| 作業ガイド（新ボード追加・デバッグ・落とし穴） | `.claude/skills/porting-asp3-to-stm32/` |
+
 ## 新しいプロジェクトの作成
 
-### STM32CubeMXの操作
+STM32CubeMX から新しいプロジェクトを作成して TOPPERS/ASP3 を組み込む方法を説明します。
+ターゲット依存部の作成も含めた完全なチェックリストは
+`.claude/skills/porting-asp3-to-stm32/checklists/new-board.md` を参照してください。
 
-STM32CubeMXから新しいプロジェクトを作成する方法を説明します。
+### STM32CubeMXの操作
 
 STM32CubeMXを起動して、メニューの「File」→「New Project」を選択します。
 
@@ -58,7 +149,8 @@ STM32CubeMXを起動して、メニューの「File」→「New Project」を選
 2. 「Commercial Part Number」に「NUCLEO-H563ZI」を入力し、右下の検索結果から「NUCLEO-H563ZI」を選択します。
 3. 右上の「Start Project」ボタンを押します。
 
-この例では「Trust Zoom」は無効のまま続けています。
+この例では「Trust Zone」は無効のまま続けています
+（**TZEN 無効が前提**です。有効にする場合は [docs/TODO.md](docs/TODO.md) 参照）。
 下記のダイアログはそのまま「OK」ボタンを押します。
 
 ![Board Project Options](images/stm32cubemx_board_options.png)
@@ -98,95 +190,74 @@ STM32CubeMXを起動して、メニューの「File」→「New Project」を選
 
 ### TOPPERS/ASP3 を使えるようにする
 
-STM32CubeMXで生成したコードを編集して、TOPPERS/ASP3 付属の「sample1」をビルド、デバッグ出来るようにします。
-このリポジトリでは「nucleo_h563zi」フォルダがSTM32CubeMXで生成したコードになります。
+STM32CubeMXで生成したコードを編集して、TOPPERS/ASP3 付属の「sample1」をビルドできるようにします。
+既存の `nucleo_h563zi/CMakeLists.txt` が完成形なので、それを参照しながら進めてください。
 
-このリポジトリにある「asp3」フォルダを、生成したコードのあるフォルダを同レベルに配置します。
+#### ターゲット依存部の用意
 
-#### CMakeList.txtの編集
+ボードが既存ターゲットと異なる場合は、`asp3/target/` の既存ディレクトリを複製して
+VCP の USART（IRQ 番号・インスタンス）等を変更します
+（手順の詳細は skill の `checklists/new-board.md`）。
 
-「CMakeList.txt」を編集し、下記の行を追加して TOPPERS/ASP3 をライブラリとしてビルドする設定を追加します。
-追加する箇所は「CMakeList.txt」を参照してください。
+#### CMakeLists.txt の編集
+
+生成された「CMakeLists.txt」に、TOPPERS/ASP3 をライブラリとしてビルドする設定を追加します。
 
 ```cmake
-# TOPPERS/ASP3 の STM32 Cube MX 用のコンパイラ定義をインクルード
+# ターゲット依存部の選択と STM32 協調ヘルパの読み込み
+set(ASP3_TARGET stm32cubemx)
 include(../asp3/asp3_stm32cubemx.cmake)
 
-# TOPPERS/ASP3 のカーネルオブジェクト定義のcfgファイルを設定
-set(ASP3_APP_CFG_FILE ${ASP3_ROOT_DIR}/sample/sample1.cfg)
+# アプリ（タスク定義）。-D 指定があればそれを尊重（テスト差し替え用）
+if(NOT DEFINED ASP3_APPLDIR)
+    set(ASP3_APPLDIR  ${ASP3_CORE_DIR}/sample)
+    set(ASP3_APPLNAME sample1)
+endif()
 
-list(APPEND ASP3_INCLUDE_DIRS
-    ${ASP3_ROOT_DIR}/sample
-)
+# asp3 カーネルライブラリをライブラリ専用モードでビルド
+set(ASP3_LIBRARY_ONLY ON CACHE BOOL "build asp3 as library only" FORCE)
+add_subdirectory(${ASP3_CORE_DIR} asp3)
 
-# TOPPERS/ASP3 のライブラリを追加
-add_subdirectory(${ASP3_ROOT_DIR} asp3)
-```
-
-「sample1.c」で依存しているソースファイルをコンパイル対象に追加します。
-
-```cmake
-# TOPPERS/ASP3 付属のソースファイルを追加
-include(${ASP3_ROOT_DIR}/library/library.cmake)
-include(${ASP3_ROOT_DIR}/syssvc/syssvc.cmake)
-```
-
-「sample1.c」をプロジェクトのコンパイル対象に追加します。
-
-```cmake
-# Add sources to executable
+# 最終実行ファイルにタスク本体を追加
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    ${ASP3_ROOT_DIR}/sample/sample1.c
+    ${ASP3_APPLDIR}/${ASP3_APPLNAME}.c
+    ${ASP3_EXTRA_APP_C_FILES}
 )
-```
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${ASP3_APPLDIR}
+)
 
-「asp3」ライブラリをリンク対象に追加します。
-
-```cmake
-# Add linked libraries
+# asp3 ライブラリをリンク
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
-
-    # Add user defined libraries
     asp3
 )
+
+# システムサービス（banner / syslog / serial / logtask 等）を追加
+asp3_add_syssvc(${CMAKE_PROJECT_NAME})
+asp3_set_stm32_options(${CMAKE_PROJECT_NAME})
 ```
 
-#### リンカスクリプトの編集
+#### リンカスクリプトの編集は不要
 
-「STM32H563xx_FLASH.ld」と「STM32H563xx_RAM.ld」を編集します。
-
-割り込みベクタは TOPPERS/ASP3 を利用するようになっていますので、`.vector`というセクション名を`.isr_vector`の中に定義します。
-
-```ld
-.isr_vector :
-{
-  . = ALIGN(4);
-  KEEP(*(.vector))
-  KEEP(*(.isr_vector)) /* Startup code */
-  . = ALIGN(4);
-} >RAM
-```
-
-STM32CubeMXで生成される割り込みベクタ`.isr_vector`は「`startup_stm32h563xx.s`」で定義されていますが、カーネルが起動した後は使用されません。
+割込みベクタテーブル（`_kernel_vector_table`）は、cfg が生成するコードの
+`__attribute__((section(".vector"), aligned(N)))` により **VTOR の整列要件を
+満たした位置に自動配置**され、実行時に `core_initialize()` が
+`SCB->VTOR` を切り替えます。**CubeMX 生成のリンカスクリプト（`*.ld`）を
+編集してはいけません**（再生成で消える上、整列指定が無いと全ベクタが
+ずれて動作しません）。CubeMX 生成側のベクタ（`.isr_vector`）はリセット〜
+`sta_ker()` までの間だけ使われます。
 
 #### main.cの編集
 
 `main`関数から、カーネルを起動するため`sta_ker`の呼び出しを追加します。
-
-ます、インクルード設定を追加します。
-`#include "target_kernel.h"`に`sta_ker`の定義があります。
-`#include "stm32h5xx_ll_tim.h"`は、プリスケーラの設定で使用しているマクロの定義を読み込むためにインクルードしています。
+いずれも `USER CODE` セクション内に書くことで、CubeMX 再生成後も保持されます。
 
 ```c
-/* Includes ------------------------------------------------------------------*/
-#include "main.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "target_kernel.h"
-#include "stm32h5xx_ll_tim.h"
+#include "target_kernel.h"      /* sta_ker の定義 */
+#include "stm32h5xx_ll_tim.h"   /* プリスケーラ設定マクロ */
 /* USER CODE END Includes */
 ```
 
@@ -194,15 +265,25 @@ STM32CubeMXで生成される割り込みベクタ`.isr_vector`は「`startup_st
 ちなみに`sta_ker`は戻ることはありません。
 
 ```c
-/* Infinite loop */
-/* USER CODE BEGIN WHILE */
-sta_ker();
-while (1)
-{
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  sta_ker();
+  while (1)
+  {
 
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-}
-/* USER CODE END 3 */
+  }
+  /* USER CODE END 3 */
 ```
+
+ビルド・書込み後、シリアルにバナーと `task1 is running` が出れば完成です。
+動かない場合は `.claude/skills/porting-asp3-to-stm32/checklists/bringup-debug.md`
+の手順で切り分けてください。
+
+## 制限事項
+
+- TECS には対応していません（asp3_core は TECS レス方針）。
+- TrustZone（TZEN 有効）構成は未対応です。
+- CubeMX 生成物に依存するため CI ではビルドしていません（実機環境で検証）。
