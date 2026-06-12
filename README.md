@@ -128,6 +128,7 @@ python3 scripts/testexec_stm32.py --board nucleo_h563zi
 
 | 内容 | 場所 |
 |---|---|
+| 実機検証ホストPCの初期セットアップ（udev・FW・CubeMX初回） | [docs/host-setup.md](docs/host-setup.md) |
 | 検証状況・テスト再実行手順 | [docs/verification.md](docs/verification.md) |
 | 残課題 | [docs/TODO.md](docs/TODO.md) |
 | 移植の経緯・root cause 解析（正本） | `asp3/asp3_core/docs/dev/stm32-integration.md` |
