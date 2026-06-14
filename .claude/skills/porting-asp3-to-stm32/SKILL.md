@@ -30,15 +30,15 @@ asp3_stm32cube/
 │   │   ├── stm32h563_nucleo/           # NUCLEO-H563ZI 用ターゲット依存部
 │   │   └── stm32h533_nucleo/      # NUCLEO-H533RE 用ターゲット依存部
 │   └── asp3_stm32cube.cmake     # glue（ASP3_TARGET_DIR/ASP3_CORE_DIR 解決）
-├── nucleo_h563zi/                 # CubeMX プロジェクト（H563ZI.ioc が正本）
-└── nucleo_h533re/                 # CubeMX プロジェクト（H533.ioc が正本）
+├── nucleo_h563zi/sample1/         # CubeMX プロジェクト（H563ZI.ioc が正本）
+└── nucleo_h533re/sample1/         # CubeMX プロジェクト（H533.ioc が正本）
     ├── H533.ioc                   # CubeMX 設定（コミット対象）
     ├── Core/                      # CubeMX 生成 + USER CODE（main.c はコミット対象）
     ├── Drivers/ cmake/ *.ld       # CubeMX 生成（.gitignore・再生成で復元）
     └── CMakeLists.txt             # アプリ統合（ASP3_TARGET / ASP3_APPLDIR）
 ```
 
-新規ボード追加では `asp3/target/<新ターゲット>` と `nucleo_<新ボード>/` の
+新規ボード追加では `asp3/target/<新ターゲット>` と `nucleo_<新ボード>/sample1/` の
 2 箇所をセットで用意する。SDK 固有部は外側リポジトリ管理、asp3_core は
 `ASP3_TARGET_DIR` で受け入れる（Pico SDK / FSP 統合と同方針）。
 
@@ -71,7 +71,7 @@ GENERATE CODE する**（ヘッドレスは不可。詳細と理由は
 ### 4. ビルド
 
 ```bash
-cd nucleo_h533re          # または nucleo_h563zi
+cd nucleo_h533re/sample1  # または nucleo_h563zi/sample1
 cmake --preset Debug
 cmake --build build/Debug # → build/Debug/H533.elf
 ```

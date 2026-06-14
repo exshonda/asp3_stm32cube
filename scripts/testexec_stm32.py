@@ -144,7 +144,7 @@ def main():
     ap.add_argument("tests", nargs="*", default=list(TEST_SPEC))
     args = ap.parse_args()
 
-    board_dir = os.path.join(REPO, args.board)
+    board_dir = os.path.join(REPO, args.board, "sample1")
     build_dir = os.path.join(board_dir, "build", "TestExec")
     elf = None  # configure 後に *.elf を探す
     logs = os.path.join(build_dir, "logs")

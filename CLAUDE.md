@@ -16,8 +16,8 @@ asp3_stm32cube/
 │   ├── asp3_stm32cube.cmake         ← 協調ヘルパ（ASP3_TARGET_DIR 等の解決）
 │   ├── asp3_core/                   ← submodule（純カーネル＋全アーキ/チップ依存部）※public
 │   └── target/                      ← STM32 ターゲット依存部（stm32h533_nucleo・stm32h563_nucleo）
-├── nucleo_h563zi/                   ← CubeMX プロジェクト（H563ZI.ioc が正本）
-├── nucleo_h533re/                   ← CubeMX プロジェクト（H533.ioc が正本）
+├── nucleo_h563zi/sample1/           ← CubeMX プロジェクト（H563ZI.ioc が正本）
+├── nucleo_h533re/sample1/           ← CubeMX プロジェクト（H533.ioc が正本）
 ├── docs/                            ← host-setup / verification / TODO
 └── .claude/skills/porting-asp3-to-stm32/  ← 移植ガイドskill
 ```

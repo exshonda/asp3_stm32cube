@@ -70,7 +70,7 @@ asp3_core 単体 configure 前提のため実機 CubeMX 構成では使えない
 python3 scripts/testexec_stm32.py --board nucleo_h563zi          # 標準36本
 python3 scripts/testexec_stm32.py --board nucleo_h563zi sem1     # 単発
 python3 scripts/testexec_stm32.py --rejudge                      # 保存ログ再判定のみ
-# ログ: nucleo_*/build/TestExec/logs/<test>.{build,ninja,flash,serial}.log
+# ログ: nucleo_*/sample1/build/TestExec/logs/<test>.{build,ninja,flash,serial}.log
 ```
 
 判定は CI ランナー互換（PASS/SKIP マーカー・hrt1/dlynse の SPECIAL_SPEC）。
@@ -82,8 +82,8 @@ asp3_core `docs/dev/issue-cpuexc-armm.md`）、cpuexc10=SKIP、int1=BUILD_FAIL
 ## test_porting の回し方（実機 TAP）
 
 ```bash
-cd nucleo_h563zi
-CORE=$PWD/../asp3/asp3_core
+cd nucleo_h563zi/sample1
+CORE=$PWD/../../asp3/asp3_core
 cmake --preset Debug -B build/TestPorting \
   -DASP3_APPLDIR=$CORE/test/porting -DASP3_APPLNAME=test_porting \
   -DASP3_EXTRA_APP_C_FILES=$CORE/test/porting/tap.c

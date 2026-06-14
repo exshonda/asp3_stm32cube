@@ -91,7 +91,7 @@ STM32_Programmer_CLI -l
 stty -F /dev/ttyACM0 115200 cs8 -cstopb -parenb -echo -icrnl raw && timeout 3 cat /dev/ttyACM0
 
 # ③ ビルド→書込み→バナー（CubeMX 生成済み前提）
-cd nucleo_h533re && cmake --preset Debug && cmake --build build/Debug
+cd nucleo_h533re/sample1 && cmake --preset Debug && cmake --build build/Debug
 STM32_Programmer_CLI -c port=SWD reset=HWrst -w $PWD/build/Debug/H533.elf -v -rst
 ```
 
