@@ -16,7 +16,7 @@
 ## 1. バイナリ検査（書込み前・30秒でできる）
 
 ```bash
-cd nucleo_*/build/Debug
+cd nucleo_*/sample1/build/Debug
 # ベクタテーブルの整列（エントリ数×4 以上の2のべき乗境界にあること）
 grep "_kernel_vector_table$" *.map
 # EXC_RETURN（TZEN 無効チップなら 0xffffffbc であること）

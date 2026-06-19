@@ -11,7 +11,7 @@
 - [ ] 同系チップ（同じ `arch/arm_m_gcc/<chip>` 層が使えるか）を確認。
       H5 系なら `stm32h5xx_stm32cube` がそのまま使える。別系列（H7 等）はチップ層の複製も必要
 
-## CubeMX プロジェクト（`nucleo_<新ボード>/`）
+## CubeMX プロジェクト（`nucleo_<新ボード>/sample1/`）
 
 - [ ] CubeMX で Board Selector から新ボードを選び、既存 `.ioc` と同等の設定で作成:
   - Toolchain: **CMake**

@@ -79,7 +79,7 @@ cmake --build build/Debug # → build/Debug/H533.elf
 アプリ（既定 sample1）の差し替えは asp3_core 標準の `-D` 機構が使える:
 
 ```bash
-CORE=$PWD/../asp3/asp3_core
+CORE=$PWD/../../asp3/asp3_core
 cmake --preset Debug -B build/TestPorting \
   -DASP3_APPLDIR=$CORE/test/porting -DASP3_APPLNAME=test_porting \
   -DASP3_EXTRA_APP_C_FILES=$CORE/test/porting/tap.c
