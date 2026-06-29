@@ -3,6 +3,10 @@
 動作確認済み環境: ST-LINK FW V3J17M10、STM32CubeProgrammer 2.22.0、
 OpenOCD（ディストリ版）、gdb-multiarch。
 
+> **Windows で gdb デバッグする場合は [gdb-debug-windows.md](gdb-debug-windows.md) を参照**
+> （OpenOCD+arm-none-eabi-gdb、flash は `hbreak` 必須、ST-LINK_gdbserver は error 32 で不可）。
+> 本書の OpenOCD+gdb 節は Linux（gdb-multiarch）向け。
+
 ## STM32_Programmer_CLI（書込み・オプションバイト）
 
 CLI 実体の例（STM32Cube bundles 配下に入ることがある）:

@@ -15,6 +15,7 @@ description: TOPPERS/ASP3 を STM32（NUCLEO-H5系・STM32CubeMX + HAL + arm-non
 2. **実機で動かない時のデバッグ** → [checklists/bringup-debug.md](checklists/bringup-debug.md)
 3. **CubeMX コード生成の運用** → [reference/cubemx-generation.md](reference/cubemx-generation.md)
 4. **書込み・デバッグ・シリアルのツール操作** → [reference/flash-debug-tools.md](reference/flash-debug-tools.md)
+5. **Windows CLI で gdb 実機デバッグ** → [reference/gdb-debug-windows.md](reference/gdb-debug-windows.md)（OpenOCD+gdb・`hbreak` 必須・ST-LINK_gdbserver の error 32 回避）
 
 ## 重要な前提知識（最初に読む）
 
